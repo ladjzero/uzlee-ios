@@ -8,6 +8,8 @@ import React, {
   View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons.js';
+import PostList from './PostList.js';
+import Test from './Test.js';
 
 export default class Main extends Component {
   constructor(props) {
@@ -20,18 +22,44 @@ export default class Main extends Component {
   render() {
     return (
       <TabBarIOS>
-        <Icon.TabBarItemIOS iconName="ios-list-outline" title="论坛" selected={this.state.selected === '论坛'} onPress={() => {
-          this.setState({selected: '论坛'});
-        }}><Text>hello world</Text></Icon.TabBarItemIOS>
-        <Icon.TabBarItemIOS iconName="ios-bell-outline" title="消息" selected={this.state.selected === '消息'} onPress={() => {
-          this.setState({selected: '消息'});
-        }} badge="6"><Text>hello world</Text></Icon.TabBarItemIOS>
-        <Icon.TabBarItemIOS iconName="ios-person-outline" title="我的" selected={this.state.selected === '我的'} onPress={() => {
-          this.setState({selected: '我的'});
-        }}><Text>hello world</Text></Icon.TabBarItemIOS>
-        <Icon.TabBarItemIOS iconName="ios-gear-outline" title="设置" selected={this.state.selected === '设置'} onPress={() => {
-          this.setState({selected: '设置'});
-        }}><Text>setting</Text></Icon.TabBarItemIOS>
+        <Icon.TabBarItemIOS
+          iconName="ios-list-outline"
+          title="论坛"
+          selected={this.state.selected === '论坛'}
+          onPress={() => {
+            this.setState({selected: '论坛'});
+          }}>
+            <NavigatorIOS initialRoute={{title: 'Discovery', component: PostList}} style={{flex: 1}} itemWrapperStyle={{flex: 1}}>
+            </NavigatorIOS>
+          </Icon.TabBarItemIOS>
+        <Icon.TabBarItemIOS 
+          iconName="ios-bell-outline" 
+          title="消息" 
+          selected={this.state.selected === '消息'} 
+          onPress={() => {
+            this.setState({selected: '消息'});
+          }} 
+          badge="6">
+            <Text>hello world</Text>
+          </Icon.TabBarItemIOS>
+        <Icon.TabBarItemIOS 
+          iconName="ios-person-outline" 
+          title="我的" 
+          selected={this.state.selected === '我的'} 
+          onPress={() => {
+            this.setState({selected: '我的'});
+          }}>
+            <Text>hello world</Text>
+        </Icon.TabBarItemIOS>
+        <Icon.TabBarItemIOS 
+          iconName="ios-gear-outline" 
+          title="设置" 
+          selected={this.state.selected === '设置'} 
+          onPress={() => {
+            this.setState({selected: '设置'});
+          }}>
+            <Text>setting</Text>
+        </Icon.TabBarItemIOS>
       </TabBarIOS>
     );
   }

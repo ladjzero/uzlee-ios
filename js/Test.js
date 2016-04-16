@@ -12,7 +12,9 @@ import Icon from 'react-native-vector-icons/Ionicons.js';
 export default class Test extends Component {
   render() {
     return (
-      <Text>hello</Text>
+      <View style={{backgroundColor: 'red'}}>
+        <Text>lkadjfla</Text>
+      </View>
     );
   }
 }
