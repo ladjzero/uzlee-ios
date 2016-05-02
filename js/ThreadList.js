@@ -24,10 +24,9 @@ import SearchBar from 'react-native-search-bar';
 import NavigationBar from 'react-native-navbar';
 import User from './User.js';
 import {host, COLOR} from './utils/Const.js';
+import {formatDay, buildUserImage} from './utils/utils.js';
 
 let FORUMS = require('./assets/hipda.json');
-
-
 let {width, height} = Dimensions.get('window');
 
 export default class ThreadList extends Component {
@@ -73,6 +72,14 @@ export default class ThreadList extends Component {
     fetch('http://' + host + '/forum/forumdisplay.php')
     .then((res) => res.json())
     .then((json) => {
+      json.threads.forEach((t) => {
+        t.dateStr = formatDay(t.dateStr);
+
+        try {
+          !t.author.image && (t.author.image = buildUserImage(t.author.id));
+        } catch (e) {}
+      });
+
       this.setState({
         threads: this.dataSource.cloneWithRows(json.threads),
         refreshing: false
@@ -119,12 +126,13 @@ export default class ThreadList extends Component {
             onRefresh={() => this.refresh()}
           />}
         />
-        <View style={this.state.showForumPick ? {} : {height: 0}}>
+        <View style={[this.state.showForumPick ? {paddingBottom: 40} : {height: 0}]}>
         <View style={{flex: 1, justifyContent: 'flex-end', flexDirection: 'row'}}>
+          <Text style={{margin: 20, color: COLOR.tint}} onPress={() => this.setState({showForumPick: false})}>确定</Text>
           <Text style={{margin: 20, color: COLOR.tint}} onPress={() => this.setState({showForumPick: false})}>取消</Text>
         </View>
         <PickerIOS selectedValue={this.state.forum} onValueChange={(forum) => this.setState({forum})}>
-          {FORUMS.map((forum) => <PickerItemIOS key={forum.fid} value={forum.fid} label={forum.name} />)}
+          {FORUMS.map((forum) => <PickerIOS.Item key={forum.fid} value={forum.fid} label={forum.name} />)}
         </PickerIOS>
         </View>
       </View>
@@ -146,39 +154,43 @@ var styles = {
   image: {
     width: 40,
     height: 40,
-    borderRadius: 5,
+    borderRadius: 4,
     marginRight: 8
   }
 };
 
 class Thread extends Component {
+  constructor(porps) {
+    super(porps);
+    this.state = {
+      userImageReady: true
+    };
+  }
+
   render() {
     var thread = this.props.thread;
 
     return (
-    <TouchableHighlight onPress={() => this.props.onItemPress()}>
+    <TouchableHighlight onPress={() => this.props.onItemPress()} underlayColor={COLOR.touchFeedback}>
       <View key={thread.id} style={styles.container}>
         <TouchableWithoutFeedback onPress={() => this.props.onUserPress()}>
-          <Image style={styles.image} source={{uri: 'http://tp2.sinaimg.cn/1236886101/180/40074117324/1'}}></Image>
+          <Image style={[styles.image, {alignItems: 'center', justifyContent: 'center'}]} source={{uri: thread.author.image}}
+            onLoad={() => this.setState({userImageReady: true})}
+            onError={() => this.setState({userImageReady: false})}>
+          <Text style={{fontSize: 24, color: 'gray', textAlign: 'center', opacity: this.state.userImageReady ? 0 : 1}}>{thread.author.name.charAt(0).toUpperCase()}</Text>
+          </Image>
         </TouchableWithoutFeedback>
-        <View style={{
-          flex: 1,
-          flexDirection: 'column'
-        }}>
-          <View style={{
-            flexDirection: 'row',
-            justifyContent: 'space-between'
-          }}>
+        <View style={{flex: 1, flexDirection: 'column'}}>
+          <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
             <TouchableWithoutFeedback onPress={() => this.props.onUserPress()}>
-              <Text style={{fontWeight: 'bold'}}>{thread.author.name}
-                <Text style={{color: 'gray', fontSize: 12, fontWeight: 'normal'}}>{thread.dateStr}</Text>
-              </Text>
+              <View style={{flexDirection: 'row'}}>
+                <Text style={{fontWeight: 'bold'}}>{thread.author.name}</Text>
+                <Text style={{color: 'gray', fontSize: 12, fontWeight: 'normal', marginLeft: 8}}>{thread.dateStr}</Text>
+              </View>
             </TouchableWithoutFeedback>
-            <Text>{thread.commentCount}</Text>
+            <Text style={{fontSize: 12, fontWeight: thread.isNew ? 'bold' : 'normal', color: thread.isNew ? 'red' : 'gray'}}>{thread.commentCount}</Text>
           </View>
-          <Text numberOfLines={2} style={{
-            fontSize: 16
-          }}>{thread.title}</Text>
+          <Text style={{fontSize: 16, marginTop: 6, lineHeight: 20, color: '#353535'}}>{thread.title}</Text>
         </View>
       </View>
     </TouchableHighlight>

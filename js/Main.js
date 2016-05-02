@@ -19,10 +19,12 @@ import Mines from './Mines.js';
 import Login from './Login.js';
 import YANavigator from 'react-native-ya-navigator';
 import Edit from './Edit.js';
-import {COLOR} from './utils/Const.js';
+import {COLOR, STYLES} from './utils/Const.js';
+import Toggle from 'react-native-toggle';
 
 const TABS = [{
-  title: '论坛'
+  title: '论坛',
+  segments: []
 }, {
   title: '消息',
   segments: ['短信', '提醒']
@@ -30,17 +32,95 @@ const TABS = [{
   title: '我的',
   segments: ['主题', '回复', '收藏']
 }, {
-  title: '设置'
+  title: '设置',
+  segments: []
 }];
+
+class RightPart extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: 0
+    };
+  }
+
+  render() {
+    if (this.state.tab == 0) {
+      return (
+        <View style={this.state.tab != 0 ? {opacity: 0} : {}}>
+          <TouchableOpacity onPress={this.props.onPress}><Icon name="ios-plus-empty" size={30} color={COLOR.tint} /></TouchableOpacity>
+        </View>
+      );
+    } else {
+      return <View style={{position: 'absolute'}} />;
+    }
+  }
+}
+
+class LeftPart extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: 0
+    };
+  }
+
+  render() {
+    if (this.state.tab == 0) {
+      return (
+        <View style={this.state.tab != 0 ? {opacity: 0} : {}}>
+          <TouchableOpacity onPress={this.props.onPress}><Text style={[STYLES.navBarFont]}>板块</Text></TouchableOpacity>
+        </View>
+      );
+    } else {
+      return <View style={{position: 'absolute'}}/>;
+    }
+  }
+}
+
+class Title extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: 0,
+      segment_1: 0,
+      segment_2: 0
+    };
+  }
+
+  render() {
+    var tab = this.state.tab;
+
+    switch(tab) {
+      case 0:
+        return <Text style={{fontSize: 18}}>Discovery</Text>;
+      case 1:
+        return <SegmentedControlIOS values={TABS[tab].segments} style={{width: 140}}
+            selectedIndex={this.state.segment_1}
+            onChange={(e) => this.setState({segment_1: e.nativeEvent.selectedSegmentIndex})}
+            onValueChange={this.props.onValueChange} />;
+      case 2:
+        return <SegmentedControlIOS values={TABS[tab].segments} style={{width: 140}}
+            selectedIndex={this.state.segment_2}
+            onChange={(e) => this.setState({segment_2: e.nativeEvent.selectedSegmentIndex})}
+            onValueChange={this.props.onValueChange} />;
+      case 3:
+        return <Text style={{fontSize: 18}}>设置</Text>;
+    }
+  }
+}
 
 export default class Main extends Component {
   static navigationDelegate = {
     id: 'MainPage',
     renderNavBarRightPart(props) {
-      return <View />;
+      return <RightPart onPress={() => 'newThread'}/>;
+    },
+    renderNavBarLeftPart() {
+      return <LeftPart onPress={() => 'toggleForumPicker'}/>;
     },
     renderTitle(props) {
-      return <View />;
+      return <Title onValueChange={() => 'setAlertsSegment'}/>;
     }
   }
 
@@ -52,66 +132,32 @@ export default class Main extends Component {
     this.props.navigator.push({component: Edit});
   }
 
-  setSelected(index) {
-    this.setState({selected: index});
-
-    var title, rightPart;
-
-    switch(index) {
-      case 0:
-        title = <View style={{flex: 1, flexDirectioni: 'row'}}><Text>Discovery</Text><Icon name="ios-plus-empty" size={30}/></View>;
-        rightPart = <TouchableOpacity activeOpacity={0.5}><Icon activeOpacity={0.5} underlayColor="red" onPress={() => 'newThread'} name="ios-plus-empty" size={30} color="red" iconStyle={{
-          marginRight: 0,
-          padding: 0,
-        }} borderRadius={0} backgroundColor="red" /></TouchableOpacity>;
-        break;
-      case 1:
-      case 2:
-        title = <SegmentedControlIOS values={TABS[index].segments} style={{width: 80 * TABS[index].segments.length}} />
-        rightPart = null;
-        break;
-      case 3:
-        title = <Text>设置</Text>;
-        rightPart = null;
-        break;
-    }
-
-    setTimeout(() => {this.props.navigator._navBar && this.props.navigator._navBar.updateUI({title, rightPart});}, 0);
+  setAlertsSegment() {
+    console.log(arguments)
   }
 
-  componentDidMount() {
-    var title, leftPart, rightPart;
+  setMinesSegment() {
 
-    switch(this.state.selected) {
-      case 0:
-        title = <Text style={{fontSize: 18}}>Discovery</Text>;
-        leftPart = <View><TouchableOpacity onPress={() => 'toggleForumPicker'}><Text style={{color: COLOR.tint}}>板块</Text></TouchableOpacity></View>;
-        rightPart = <View><TouchableOpacity onPress={() => 'newThread'}><Icon name="ios-plus-empty" size={30} color={COLOR.tint} /></TouchableOpacity></View>;
-        break;
-      case 1:
-      case 2:
-        title = <SegmentedControlIOS values={TABS[index].segments} style={{width: 80 * TABS[index].segments.length}} />
-        rightPart = null;
-        break;
-      case 3:
-        title = <Text>设置</Text>;
-        rightPart = null;
-        break;
-    }
+  }
 
-    setTimeout(() => {this.props.navigator._navBar && this.props.navigator._navBar.updateUI({title, leftPart, rightPart});}, 0);
+  setSelected(index) {
+    this.setState({selected: index});
+    this.props.navigator._navBar.refs.leftPart.setState({tab: index});
+    this.props.navigator._navBar.refs.rightPart.setState({tab: index});
+    this.props.navigator._navBar.refs.title.setState({tab: index});
   }
 
   constructor(props) {
     super(props);
     this.state = {
       selected: 0,
-      showForumPicker: false
+      showForumPicker: false,
+      alertsSegment: 0,
+      minesSegment: 0
     };
   }
 
   render() {
-    console.log('rerere')
     return (
       <YANavigator.Scene
         delegate={this}>
@@ -154,12 +200,3 @@ export default class Main extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  }
-});
